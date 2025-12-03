@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulación de Consciencia</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505; /* La oscuridad/Inconsciencia */
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            pointer-events: none; /* Dejar pasar el click al canvas */
+            mix-blend-mode: difference;
+        }
+
+        h1 {
+            font-weight: 100;
+            letter-spacing: 10px;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #555;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1 id="concept-text">INCONSCIENCIA</h1>
+    </div>
+
+    <div class="instruction">Mueve el cursor para integrar la realidad (Generar Consciencia)</div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textElement = document.getElementById('concept-text');
+
+        let width, height;
+        let particles = [];
+        
+        // Configuración de la "Fisura" (Tu campo de consciencia)
+        const properties = {
+            particleCount: 180,
+            connectionRadius: 120, // El tamaño de tu "foco"
+            mouse: { x: -1000, y: -1000 } // Empieza fuera
+        };
+
+        // Conceptos de tu disertación que aparecerán dinámicamente
+        const concepts = ["ESTÍMULO", "SENSACIÓN", "MEMORIA", "INTEGRACIÓN", "YO", "REALIDAD RELATIVA"];
+        let conceptIndex = 0;
+
+        // Ajustar tamaño
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Clase Partícula (Fragmentos de la Realidad Absoluta)
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1.5; // Velocidad lenta
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Rebotar en los bordes (el universo cerrado)
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw(opacity) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                // Si está lejos de la consciencia, es casi invisible (gris oscuro)
+                // Si está cerca, brilla (blanco/cian)
+                ctx.fillStyle = `rgba(200, 255, 255, ${opacity})`;
+                ctx.fill();
+            }
+        }
+
+        // Inicializar partículas
+        function init() {
+            particles = [];
+            for (let i = 0; i < properties.particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // Bucle principal de animación
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            let activeConsciousness = false;
+
+            particles.forEach((p, index) => {
+                p.update();
+
+                // Calcular distancia entre la partícula y el "Foco de Consciencia" (Ratón)
+                const dx = p.x - properties.mouse.x;
+                const dy = p.y - properties.mouse.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+
+                // Opacidad base: La realidad absoluta es oscura si no se observa
+                let opacity = 0.05; 
+
+                // Si la partícula entra en la "Fisura" (radio del ratón)
+                if (distance < properties.connectionRadius) {
+                    opacity = 1 - (distance / properties.connectionRadius);
+                    activeConsciousness = true;
+
+                    // DIBUJAR CONEXIONES (La integración neuronal / El "Yo")
+                    // Solo conectamos partículas que están siendo observadas
+                    for (let j = index + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx2 = p.x - p2.x;
+                        const dy2 = p.y - p2.y;
+                        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+
+                        if (dist2 < 60) { // Solo conectar si están cerca entre sí
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(100, 200, 255, ${opacity})`; // Color "mente"
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                p.draw(opacity);
+            });
+
+            // Cambiar texto dinámicamente si hay consciencia activa
+            if (activeConsciousness) {
+                if (Math.random() > 0.98) { // Cambio aleatorio ocasional
+                    conceptIndex = (conceptIndex + 1) % concepts.length;
+                    textElement.innerText = concepts[conceptIndex];
+                    textElement.style.opacity = 1;
+                }
+            } else {
+                textElement.innerText = "INCONSCIENCIA";
+                textElement.style.opacity = 0.3;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Event Listeners para la "Entrada Sensorial"
+        window.addEventListener('mousemove', (e) => {
+            properties.mouse.x = e.x;
+            properties.mouse.y = e.y;
+        });
+
+        // Soporte táctil
+        window.addEventListener('touchmove', (e) => {
+            properties.mouse.x = e.touches[0].clientX;
+            properties.mouse.y = e.touches[0].clientY;
+        });
+
+        init();
+        animate();
+
+    </script>
+</body>
+</html>
