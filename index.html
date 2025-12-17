@@ -2,69 +2,250 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Simulación de Consciencia</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[3D Tensum] | Ingeniería y Diseño 3D</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
+        :root {
+            --color-principal: #ffffff; /* Texto y acentos en blanco */
+            --color-secundario: #1a1a1a;
+            --color-fondo: #050505;    
+            --color-texto: #ffffff;    /* Todo el texto en blanco */
+            --font-principal: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
-            overflow: hidden;
-            background-color: #050505; /* La oscuridad/Inconsciencia */
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            padding: 0;
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            font-family: var(--font-principal);
+            overflow-x: hidden;
         }
 
         canvas {
             display: block;
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            z-index: 1;
+            z-index: -1;
         }
 
-        #ui-layer {
-            position: absolute;
+        #concept-layer {
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 2;
-            text-align: center;
-            pointer-events: none; /* Dejar pasar el click al canvas */
-            mix-blend-mode: difference;
+            z-index: 0;
+            pointer-events: none;
+            mix-blend-mode: overlay;
         }
 
-        h1 {
+        #concept-text {
             font-weight: 100;
-            letter-spacing: 10px;
-            font-size: 1.5rem;
-            opacity: 0.8;
+            letter-spacing: 15px;
+            font-size: 4rem;
+            opacity: 0.15;
             text-transform: uppercase;
+            color: #ffffff; /* Texto dinámico en blanco */
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header h1 {
+            font-family: 'Georgia', serif;
+            font-size: 1.4em;
+            margin: 0;
+            color: var(--color-principal);
+            letter-spacing: 2px;
+        }
+
+        nav a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--color-principal);
+        }
+
+        section {
+            padding: 100px 10%;
+            min-height: 400px;
+            text-align: center;
+            background: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            color: var(--color-principal);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
 
         p {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 20px;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        .instruction {
-            position: absolute;
-            bottom: 30px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.7rem;
-            color: #555;
-            z-index: 2;
+        .servicios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
         }
+
+        .servicio-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .servicio-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #ffffff;
+            color: #000;
+            padding: 12px 35px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        footer {
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 60px 10% 30px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-links a {
+            color: #ffffff;
+            font-size: 28px;
+            margin: 0 20px;
+            transition: all 0.3s;
+            display: inline-block;
+            opacity: 0.7;
+        }
+
+        .social-links a:hover {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <h1 id="concept-text">INCONSCIENCIA</h1>
+    <canvas id="canvas"></canvas>
+
+    <div id="concept-layer">
+        <h1 id="concept-text">EXPLORA</h1>
     </div>
 
-    <div class="instruction">Mueve el cursor para integrar la realidad (Generar Consciencia)</div>
+    <header>
+        <h1>3D TENSUM</h1>
+        <nav>
+            <a href="#quienes-somos">Quiénes Somos</a>
+            <a href="#cometido">Cometido</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#capacidades">Capacidades</a>
+            <a href="catalogo.html" target="_blank">Catálogo</a>
+        </nav>
+    </header>
 
-    <canvas id="canvas"></canvas>
+    <section id="quienes-somos">
+        <h2>Quiénes Somos</h2>
+        <p>Somos un equipo de dos ingenieros apasionados por la fabricación aditiva y la resolución de problemas técnicos. Nuestra estructura pequeña garantiza agilidad, atención al detalle y una comunicación directa.</p>
+    </section>
+
+    <section id="cometido">
+        <h2>Nuestro Cometido</h2>
+        <p>Nuestra misión es llevar sus ideas del concepto a la realidad tangible, optimizando el diseño para la fabricación aditiva y garantizando soluciones de ingeniería de alta fidelidad.</p>
+    </section>
+
+    <section id="servicios">
+        <h2>Servicios</h2>
+        <div class="servicios-grid">
+            <div class="servicio-card">
+                <i class="fas fa-cube" style="font-size: 2em; margin-bottom: 15px;"></i>
+                <h3>Impresión 3D</h3>
+                <p>Prototipado rápido y piezas finales en materiales técnicos.</p>
+            </div>
+            <div class="servicio-card">
+                <i class="fas fa-drafting-compass" style="font-size: 2em; margin-bottom: 15px;"></i>
+                <h3>Diseño e Ingeniería</h3>
+                <p>Optimización CAD y desarrollo de producto desde cero.</p>
+            </div>
+            <div class="servicio-card">
+                <i class="fas fa-microchip" style="font-size: 2em; margin-bottom: 15px;"></i>
+                <h3>Escaneo 3D</h3>
+                <p>Digitalización de alta precisión e ingeniería inversa.</p>
+            </div>
+        </div>
+        <a href="catalogo.html" target="_blank" class="btn">Ver Catálogo de Diseños</a>
+    </section>
+
+    <section id="capacidades">
+        <h2>Capacidades</h2>
+        <p>Expertos en softwares líderes del sector. Contamos con tecnología de escaneo de luz estructurada y sistemas de impresión de grado industrial.</p>
+    </section>
+
+    <footer>
+        <div class="contact-info">
+            <p><strong>¿Hablamos de tu proyecto?</strong></p>
+            <p><i class="fas fa-phone"></i> [Su Teléfono]</p>
+            <p><i class="fas fa-envelope"></i> [Su Email]</p>
+        </div>
+        
+        <div class="social-links" style="margin-top: 30px;">
+            <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" target="_blank"><i class="fas fa-shopping-bag"></i></a>
+        </div>
+        
+        <p style="font-size: 0.75em; color: #555; margin-top: 50px;">&copy; 2024 [3D Tensum]. Todos los derechos reservados.</p>
+    </footer>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -74,18 +255,15 @@
         let width, height;
         let particles = [];
         
-        // Configuración de la "Fisura" (Tu campo de consciencia)
         const properties = {
-            particleCount: 180,
-            connectionRadius: 120, // El tamaño de tu "foco"
-            mouse: { x: -1000, y: -1000 } // Empieza fuera
+            particleCount: 540, // x3 Partículas
+            connectionRadius: 130, 
+            mouse: { x: -1000, y: -1000 }
         };
 
-        // Conceptos de tu disertación que aparecerán dinámicamente
-        const concepts = ["ESTÍMULO", "SENSACIÓN", "MEMORIA", "INTEGRACIÓN", "YO", "REALIDAD RELATIVA"];
+        const concepts = ["DISEÑO", "INGENIERÍA", "PRECISIÓN", "FUTURO", "SOLUCIONES", "3D PRINTING"];
         let conceptIndex = 0;
 
-        // Ajustar tamaño
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
@@ -93,21 +271,18 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Clase Partícula (Fragmentos de la Realidad Absoluta)
         class Particle {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 1.5; // Velocidad lenta
-                this.vy = (Math.random() - 0.5) * 1.5;
-                this.size = Math.random() * 2 + 1;
+                this.vx = (Math.random() - 0.5) * 1.0;
+                this.vy = (Math.random() - 0.5) * 1.0;
+                this.size = Math.random() * 1.5 + 0.5;
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-
-                // Rebotar en los bordes (el universo cerrado)
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
             }
@@ -115,14 +290,11 @@
             draw(opacity) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                // Si está lejos de la consciencia, es casi invisible (gris oscuro)
-                // Si está cerca, brilla (blanco/cian)
-                ctx.fillStyle = `rgba(200, 255, 255, ${opacity})`;
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`; // Partículas en blanco
                 ctx.fill();
             }
         }
 
-        // Inicializar partículas
         function init() {
             particles = [];
             for (let i = 0; i < properties.particleCount; i++) {
@@ -130,80 +302,62 @@
             }
         }
 
-        // Bucle principal de animación
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            
-            let activeConsciousness = false;
+            let active = false;
 
             particles.forEach((p, index) => {
                 p.update();
-
-                // Calcular distancia entre la partícula y el "Foco de Consciencia" (Ratón)
                 const dx = p.x - properties.mouse.x;
                 const dy = p.y - properties.mouse.y;
                 const distance = Math.sqrt(dx*dx + dy*dy);
 
-                // Opacidad base: La realidad absoluta es oscura si no se observa
-                let opacity = 0.05; 
+                let opacity = 0.1; 
 
-                // Si la partícula entra en la "Fisura" (radio del ratón)
                 if (distance < properties.connectionRadius) {
                     opacity = 1 - (distance / properties.connectionRadius);
-                    activeConsciousness = true;
+                    active = true;
 
-                    // DIBUJAR CONEXIONES (La integración neuronal / El "Yo")
-                    // Solo conectamos partículas que están siendo observadas
                     for (let j = index + 1; j < particles.length; j++) {
                         const p2 = particles[j];
                         const dx2 = p.x - p2.x;
                         const dy2 = p.y - p2.y;
                         const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
 
-                        if (dist2 < 60) { // Solo conectar si están cerca entre sí
+                        if (dist2 < 70) {
                             ctx.beginPath();
-                            ctx.strokeStyle = `rgba(100, 200, 255, ${opacity})`; // Color "mente"
-                            ctx.lineWidth = 0.5;
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.4})`; // Conexiones blancas
+                            ctx.lineWidth = 0.4;
                             ctx.moveTo(p.x, p.y);
                             ctx.lineTo(p2.x, p2.y);
                             ctx.stroke();
                         }
                     }
                 }
-                
                 p.draw(opacity);
             });
 
-            // Cambiar texto dinámicamente si hay consciencia activa
-            if (activeConsciousness) {
-                if (Math.random() > 0.98) { // Cambio aleatorio ocasional
+            if (active) {
+                if (Math.random() > 0.99) {
                     conceptIndex = (conceptIndex + 1) % concepts.length;
                     textElement.innerText = concepts[conceptIndex];
-                    textElement.style.opacity = 1;
+                    textElement.style.opacity = 0.25;
                 }
             } else {
-                textElement.innerText = "INCONSCIENCIA";
-                textElement.style.opacity = 0.3;
+                textElement.innerText = "EXPLORA";
+                textElement.style.opacity = 0.08;
             }
 
             requestAnimationFrame(animate);
         }
 
-        // Event Listeners para la "Entrada Sensorial"
         window.addEventListener('mousemove', (e) => {
-            properties.mouse.x = e.x;
-            properties.mouse.y = e.y;
-        });
-
-        // Soporte táctil
-        window.addEventListener('touchmove', (e) => {
-            properties.mouse.x = e.touches[0].clientX;
-            properties.mouse.y = e.touches[0].clientY;
+            properties.mouse.x = e.clientX;
+            properties.mouse.y = e.clientY;
         });
 
         init();
         animate();
-
     </script>
 </body>
 </html>
